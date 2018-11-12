@@ -1,0 +1,49 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.2.71'
+    id 'de.undercouch.download' version '3.4.3'
+}
+
+group 'mrugas.put.poznan.pl'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile group: 'org.apache.lucene', name: 'lucene-core', version: '7.5.0'
+    compile group: 'org.apache.lucene', name: 'lucene-queryparser', version: '7.5.0'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+task downloadZipFile(type: Download) {
+    src 'http://www.cs.put.poznan.pl/mkadzinski/ezi/dzienne/lab6/Shakespeare.zip'
+    dest new File(buildDir, 'Shakespeare.zip')
+    overwrite false
+    outputs.upToDateWhen { false }
+}
+
+task downloadXMLFile(type: Download) {
+    src 'http://www.cs.put.poznan.pl/mkadzinski/ezi/dzienne/lab6/bbc_rss_feed.xml'
+    dest new File(project.projectDir, 'bbc_rss_feed.xml')
+    overwrite false
+    outputs.upToDateWhen { false }
+}
+
+task downloadAndUnzipFile(dependsOn: [downloadZipFile, downloadXMLFile], type: Copy) {
+    from zipTree(downloadZipFile.dest)
+    into project.projectDir
+    eachFile {
+        if (it.relativePath.getFile(destinationDir).exists()) {
+            it.exclude()
+        }
+    }
+    outputs.upToDateWhen { false }
+}
